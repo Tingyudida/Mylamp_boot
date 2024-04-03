@@ -18,12 +18,13 @@ public interface UserInfoService {
      * 根据单位ID查找部门
      *
      * @param companyId 单位ID
+     * @param employeeId  员工id
      * @return java.util.List<top.tangyh.lamp.model.entity.base.SysOrg>
      * @author tangyh
      * @date 2022/9/29 11:18 PM
      * @create [2022/9/29 11:18 PM ] [tangyh] [初始创建]
      */
-    List<BaseOrg> findDeptByCompany(Long companyId);
+    List<BaseOrg> findDeptByCompany(Long companyId, Long employeeId);
 
     /**
      * 查询单位和部门信息

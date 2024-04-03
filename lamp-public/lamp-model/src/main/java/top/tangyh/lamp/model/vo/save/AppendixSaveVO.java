@@ -1,19 +1,20 @@
 package top.tangyh.lamp.model.vo.save;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import top.tangyh.lamp.model.enumeration.base.FileType;
+import top.tangyh.basic.utils.ArgumentAssert;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * <p>
@@ -26,15 +27,12 @@ import java.io.Serializable;
  * @create [2021-06-30] [tangyh] [初始创建]
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Accessors(chain = true)
 @ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = false)
-@Builder
 @Schema(description = "业务附件")
 public class AppendixSaveVO implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**
@@ -42,53 +40,79 @@ public class AppendixSaveVO implements Serializable {
      */
     @Schema(description = "业务id")
     private Long bizId;
-    /**
-     * 业务类型
-     */
-    @Schema(description = "业务类型")
-    @Size(max = 255, message = "业务类型长度不能超过255")
-    private String bizType;
+    @Schema(description = "类型和附件id")
+    private List<TypeFile> typeFiles;
 
-    /**
-     * 文件类型
-     */
-    @Schema(description = "文件类型")
-    private FileType fileType;
-    /**
-     * 桶
-     */
-    @Schema(description = "桶")
-    @Size(max = 255, message = "桶长度不能超过255")
-    private String bucket;
-    /**
-     * 文件相对地址
-     */
-    @Schema(description = "文件相对地址")
-    @Size(max = 255, message = "文件相对地址长度不能超过255")
-    @NotBlank(message = "请先上传文件")
-    private String path;
-    /**
-     * 原始文件名
-     */
-    @Schema(description = "原始文件名")
-    @Size(max = 255, message = "原始文件名长度不能超过255")
-    @NotBlank(message = "请先上传文件")
-    private String originalFileName;
+    @Getter
+    @Setter
+    @ToString
+    public static class TypeFile {
+        @Schema(description = "业务类型")
+        private String bizType;
+        @Schema(description = "多个附件id")
+        private List<Long> fileIdList;
 
-    /**
-     * 文件类型
-     */
-    @Schema(description = "文件类型")
-    @Size(max = 255, message = "文件类型长度不能超过255")
-    private String contentType;
-    /**
-     * 大小
-     */
-    @Schema(description = "大小")
-    private Long size;
+        public static TypeFile build(String bizType, Long fileId) {
+            if (StrUtil.isEmpty(bizType) || fileId == null) {
+                return null;
+            }
+            return new TypeFile().setBizType(bizType).setFileIdList(Collections.singletonList(fileId));
+        }
 
-    @Schema(description = "附件id c_file表的id")
-    @NotNull(message = "请上传附件")
-    private Long id;
+        public static TypeFile build(String bizType, List<Long> fileIds) {
+            if (StrUtil.isEmpty(bizType) || CollUtil.isEmpty(fileIds)) {
+                return null;
+            }
+            return new TypeFile().setBizType(bizType).setFileIdList(fileIds);
+        }
+
+    }
+
+
+    public static AppendixSaveVO buildDelete(Long bizId) {
+        ArgumentAssert.notNull(bizId, "请填写业务id");
+        return new AppendixSaveVO().setBizId(bizId);
+    }
+
+    public AppendixSaveVO setTypeFiles(List<TypeFile> typeFiles) {
+        this.typeFiles = typeFiles == null ? Collections.emptyList() : typeFiles;
+        return this;
+    }
+
+    public AppendixSaveVO setTypeFiles(TypeFile typeFile) {
+        if (typeFile != null) {
+            this.setTypeFiles(Collections.singletonList(typeFile));
+        }
+        return this;
+    }
+
+    public AppendixSaveVO setTypeFiles(TypeFile... typeFiles) {
+        if (typeFiles.length > 0) {
+            this.setTypeFiles(Arrays.stream(typeFiles).toList());
+        }
+        return this;
+    }
+
+    public static AppendixSaveVO build(Long bizId, String bizType, Long fileId) {
+        ArgumentAssert.notNull(bizId, "请填写业务id");
+        ArgumentAssert.notEmpty(bizType, "请填写业务类型");
+        return new AppendixSaveVO().setBizId(bizId).setTypeFiles(TypeFile.build(bizType, fileId));
+    }
+
+    public static AppendixSaveVO build(Long bizId, String bizType, List<Long> fileIds) {
+        ArgumentAssert.notNull(bizId, "请填写业务id");
+        ArgumentAssert.notEmpty(bizType, "请填写业务类型");
+        return new AppendixSaveVO().setBizId(bizId).setTypeFiles(TypeFile.build(bizType, fileIds));
+    }
+
+    public static AppendixSaveVO build(Long bizId, TypeFile... typeFiles) {
+        ArgumentAssert.notNull(bizId, "请填写业务id");
+        return new AppendixSaveVO().setBizId(bizId).setTypeFiles(typeFiles);
+    }
+
+    public static AppendixSaveVO build(Long bizId, List<TypeFile> typeFiles) {
+        ArgumentAssert.notNull(bizId, "请填写业务id");
+        return new AppendixSaveVO().setBizId(bizId).setTypeFiles(typeFiles);
+    }
 
 }

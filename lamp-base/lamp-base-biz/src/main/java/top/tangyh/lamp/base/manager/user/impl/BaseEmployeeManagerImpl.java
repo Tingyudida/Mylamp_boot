@@ -12,6 +12,7 @@ import top.tangyh.basic.utils.ArgumentAssert;
 import top.tangyh.lamp.base.entity.user.BaseEmployee;
 import top.tangyh.lamp.base.manager.user.BaseEmployeeManager;
 import top.tangyh.lamp.base.mapper.user.BaseEmployeeMapper;
+import top.tangyh.lamp.base.vo.query.user.BaseEmployeePageQuery;
 import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 import top.tangyh.lamp.common.cache.base.user.EmployeeCacheKeyBuilder;
 
@@ -43,8 +44,8 @@ public class BaseEmployeeManagerImpl extends SuperCacheManagerImpl<BaseEmployeeM
     }
 
     @Override
-    public IPage<BaseEmployeeResultVO> selectPageResultVO(IPage<BaseEmployee> page, Wrapper<BaseEmployee> wrapper) {
-        return baseMapper.selectPageResultVO(page, wrapper);
+    public IPage<BaseEmployeeResultVO> selectPageResultVO(IPage<BaseEmployee> page, Wrapper<BaseEmployee> wrapper, BaseEmployeePageQuery model) {
+        return baseMapper.selectPageResultVO(page, wrapper, model);
     }
 
     @Override

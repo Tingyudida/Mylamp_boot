@@ -28,14 +28,4 @@
         </where>
         order by a.sort_value asc
     </select>
-
-    <!-- 查询员工拥有的应用 -->
-    <select id="findApplicationByEmployeeId" parameterType="java.util.Map" resultType="java.lang.Long">
-        select DISTINCT tar.application_id
-        from def_tenant_application_rel tar
-                 INNER JOIN def_user_tenant_rel utr on tar.tenant_id = utr.tenant_id
-        where utr.id = #{employeeId}
-          and (tar.expiration_time >= #{now} or tar.expiration_time is null)
-    </select>
-
 </mapper>

@@ -21,12 +21,9 @@ import top.tangyh.lamp.base.entity.user.BaseOrg;
 import top.tangyh.lamp.model.entity.system.SysUser;
 import top.tangyh.lamp.model.vo.result.UserQuery;
 import top.tangyh.lamp.oauth.biz.OauthUserBiz;
-import top.tangyh.lamp.oauth.enumeration.GrantType;
-import top.tangyh.lamp.oauth.granter.TokenGranterBuilder;
 import top.tangyh.lamp.oauth.service.CaptchaService;
 import top.tangyh.lamp.oauth.service.UserInfoService;
 import top.tangyh.lamp.oauth.vo.result.DefUserInfoResultVO;
-import top.tangyh.lamp.oauth.vo.result.LoginResultVO;
 import top.tangyh.lamp.oauth.vo.result.OrgResultVO;
 import top.tangyh.lamp.system.service.tenant.DefUserService;
 import top.tangyh.lamp.system.vo.update.tenant.DefUserAvatarUpdateVO;
@@ -52,7 +49,6 @@ import java.util.List;
 public class UserInfoController {
 
     private final OauthUserBiz oauthUserBiz;
-    private final TokenGranterBuilder tokenGranterBuilder;
     private final UserInfoService userInfoService;
     private final DefUserService defUserService;
     private final CaptchaService captchaService;
@@ -81,14 +77,6 @@ public class UserInfoController {
             userId = ContextUtil.getUserId();
         }
         return R.success(oauthUserBiz.getUserById(userId));
-    }
-
-
-    @Operation(summary = "切换企业")
-    @PutMapping("/switchTenantAndOrg")
-    public R<LoginResultVO> switchOrg(@RequestParam(required = false) Long companyId,
-                                      @RequestParam(required = false) Long deptId) {
-        return R.success(tokenGranterBuilder.getGranter(GrantType.PASSWORD).switchOrg(companyId, deptId));
     }
 
 
@@ -176,8 +164,8 @@ public class UserInfoController {
     @Operation(summary = "根据单位查询部门")
     @WebLog(value = "根据单位查询部门")
     @GetMapping("/findDeptByCompany")
-    public R<List<BaseOrg>> findDeptByCompany(@RequestParam Long companyId) {
-        return R.success(userInfoService.findDeptByCompany(companyId));
+    public R<List<BaseOrg>> findDeptByCompany(@RequestParam Long companyId, @RequestParam Long employeeId) {
+        return R.success(userInfoService.findDeptByCompany(companyId, employeeId));
     }
 
 

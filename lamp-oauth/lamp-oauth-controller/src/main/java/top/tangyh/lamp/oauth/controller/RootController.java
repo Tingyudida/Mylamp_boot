@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,6 +16,7 @@ import top.tangyh.basic.base.R;
 import top.tangyh.basic.exception.BizException;
 import top.tangyh.basic.jwt.TokenHelper;
 import top.tangyh.basic.jwt.model.Token;
+import top.tangyh.lamp.oauth.enumeration.GrantType;
 import top.tangyh.lamp.oauth.granter.TokenGranterBuilder;
 import top.tangyh.lamp.oauth.service.UserInfoService;
 import top.tangyh.lamp.oauth.vo.param.LoginParamVO;
@@ -71,6 +73,12 @@ public class RootController {
     @PostMapping(value = "/anyTenant/login")
     public R<LoginResultVO> login(@Validated @RequestBody LoginParamVO login) throws BizException {
         return tokenGranterBuilder.getGranter(login.getGrantType()).login(login);
+    }
+
+    @Operation(summary = "切换部门")
+    @PutMapping("/anyone/switchTenantAndOrg")
+    public R<LoginResultVO> switchOrg(@RequestParam(required = false) Long orgId) {
+        return R.success(tokenGranterBuilder.getGranter(GrantType.PASSWORD).switchOrg(orgId));
     }
 
     @Operation(summary = "退出", description = "退出")

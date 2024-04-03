@@ -5,6 +5,9 @@ import top.tangyh.basic.base.manager.impl.SuperManagerImpl;
 import top.tangyh.lamp.file.entity.File;
 import top.tangyh.lamp.file.manager.FileManager;
 import top.tangyh.lamp.file.mapper.FileMapper;
+import top.tangyh.lamp.file.vo.result.FileResultVO;
+
+import java.util.List;
 
 /**
  * 文件
@@ -14,5 +17,8 @@ import top.tangyh.lamp.file.mapper.FileMapper;
  */
 @Service
 public class FileManagerImpl extends SuperManagerImpl<FileMapper, File> implements FileManager {
-
+    @Override
+    public List<FileResultVO> listByBizIdAndBizType(Long bizId, String bizType) {
+        return baseMapper.listByBizIdAndBizType(bizId, bizType);
+    }
 }

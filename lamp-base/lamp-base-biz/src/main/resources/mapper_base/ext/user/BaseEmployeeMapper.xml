@@ -17,7 +17,33 @@
     <select id="selectPageResultVO" resultMap="ResultVOResultMap">
         select
         <include refid="Base_Column_List"/>
-        from base_employee e ${ew.customSqlSegment}
+        from base_employee e
+        <where>
+            ${ew.sqlSegment}
+            <if test="model.orgIdList != null and model.orgIdList.size() > 0">
+                and e.id in (
+                select eor.employee_id from base_employee_org_rel eor where eor.employee_id = e.id and eor.org_id in
+                <foreach close=")" collection="model.orgIdList" item="id" open="(" separator=",">
+                    #{id}
+                </foreach>
+                )
+            </if>
+            <if test='model.roleId != null and model.scope != null and model.scope != "-1"'>
+                and
+                <choose>
+                    <when test='"1" == model.scope'>
+                        EXISTS
+                    </when>
+                    <otherwise>
+                        NOT EXISTS
+                    </otherwise>
+                </choose>
+                (
+                select 1 from base_employee_role_rel err where err.employee_id = e.id and err.role_id =
+                #{model.roleId}
+                )
+            </if>
+        </where>
     </select>
 
     <sql id="Uar_Column_List">

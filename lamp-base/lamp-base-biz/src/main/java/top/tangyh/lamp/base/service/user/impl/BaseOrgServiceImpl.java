@@ -203,6 +203,7 @@ public class BaseOrgServiceImpl extends SuperCacheServiceImpl<BaseOrgManager, Lo
         return sysOrg;
     }
 
+
     @Override
     @Transactional(readOnly = true)
     public List<BaseOrg> findCompanyByEmployeeId(Long employeeId) {
@@ -245,4 +246,28 @@ public class BaseOrgServiceImpl extends SuperCacheServiceImpl<BaseOrgManager, Lo
         return companyList;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<BaseOrg> findOrgByEmployeeId(Long employeeId) {
+        // 员工所属的机构 ID
+        List<Long> orgIdList = baseEmployeeOrgRelManager.findOrgIdByEmployeeId(employeeId);
+        // 员工所属的机构 实体类
+        return findByIds(orgIdList, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BaseOrg getCompanyByDeptId(Long deptId) {
+        if (deptId == null) {
+            return null;
+        }
+        BaseOrg org = superManager.getByIdCache(deptId);
+        if (org == null) {
+            return null;
+        }
+        if (OrgTypeEnum.COMPANY.eq(org.getType())) {
+            return org;
+        }
+        return getCompanyByDeptId(org.getParentId());
+    }
 }

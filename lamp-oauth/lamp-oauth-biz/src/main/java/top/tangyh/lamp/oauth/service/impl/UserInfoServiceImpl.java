@@ -1,7 +1,7 @@
 package top.tangyh.lamp.oauth.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import top.tangyh.basic.cache.redis2.CacheResult;
 import top.tangyh.basic.cache.repository.CacheOps;
@@ -30,18 +30,13 @@ import java.util.List;
  * @create [2022/9/16 12:21 PM ] [tangyh] [初始创建]
  */
 @Service
+@RequiredArgsConstructor
 public class UserInfoServiceImpl implements UserInfoService {
-    @Autowired
-    protected BaseEmployeeService baseEmployeeService;
-    @Autowired
-    protected BaseOrgService baseOrgService;
-    @Autowired
-    protected DefUserService defUserService;
-    @Autowired
-    protected CacheOps cacheOps;
-
-    @Autowired
-    protected SystemProperties systemProperties;
+    protected final BaseEmployeeService baseEmployeeService;
+    protected final BaseOrgService baseOrgService;
+    protected final DefUserService defUserService;
+    protected final CacheOps cacheOps;
+    protected final SystemProperties systemProperties;
 
     @Override
     public OrgResultVO findCompanyAndDept() {
@@ -52,20 +47,20 @@ public class UserInfoServiceImpl implements UserInfoService {
         ArgumentAssert.notNull(baseEmployee, "用户不属于该企业");
 
         // 上次登录的单位
-        List<BaseOrg> companyList = baseOrgService.findCompanyByEmployeeId(baseEmployee.getId());
+        List<BaseOrg> orgList = baseOrgService.findOrgByEmployeeId(baseEmployee.getId());
+
         Long currentCompanyId = companyId != null ? companyId : baseEmployee.getLastCompanyId();
 
-        // 上次登录的部门
-        List<BaseOrg> deptList = baseOrgService.findDeptByEmployeeId(baseEmployee.getId(), currentCompanyId);
         Long currentDeptId = deptId != null ? deptId : baseEmployee.getLastDeptId();
         return OrgResultVO.builder()
-                .companyList(companyList).currentCompanyId(currentCompanyId)
-                .deptList(deptList).currentDeptId(currentDeptId).build();
+                .orgList(orgList)
+                .employeeId(baseEmployee.getId())
+                .currentCompanyId(currentCompanyId)
+                .currentDeptId(currentDeptId).build();
     }
 
     @Override
-    public List<BaseOrg> findDeptByCompany(Long companyId) {
-        Long employeeId = ContextUtil.getEmployeeId();
+    public List<BaseOrg> findDeptByCompany(Long companyId, Long employeeId) {
         return baseOrgService.findDeptByEmployeeId(employeeId, companyId);
     }
 

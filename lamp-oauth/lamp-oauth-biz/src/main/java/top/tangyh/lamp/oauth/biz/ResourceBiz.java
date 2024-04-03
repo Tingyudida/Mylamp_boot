@@ -9,14 +9,11 @@ import org.springframework.util.AntPathMatcher;
 import top.tangyh.basic.context.ContextUtil;
 import top.tangyh.basic.database.mybatis.conditions.Wraps;
 import top.tangyh.basic.jackson.JsonUtil;
-import top.tangyh.basic.utils.ArgumentAssert;
 import top.tangyh.basic.utils.BeanPlusUtil;
 import top.tangyh.basic.utils.CollHelper;
 import top.tangyh.basic.utils.StrPool;
 import top.tangyh.basic.utils.TreeUtil;
-import top.tangyh.lamp.base.entity.user.BaseEmployee;
 import top.tangyh.lamp.base.service.system.BaseRoleService;
-import top.tangyh.lamp.base.service.user.BaseEmployeeService;
 import top.tangyh.lamp.base.vo.result.user.RouterMeta;
 import top.tangyh.lamp.base.vo.result.user.VueRouter;
 import top.tangyh.lamp.common.constant.BizConstant;
@@ -289,7 +286,6 @@ public class ResourceBiz {
             if (meta == null) {
                 meta = new RouterMeta();
             }
-            meta.setComponent(item.getComponent());
             if (StrUtil.isEmpty(meta.getTitle())) {
                 meta.setTitle(item.getName());
             }
@@ -298,7 +294,6 @@ public class ResourceBiz {
                 //  是否内嵌页面
                 meta.setFrameSrc(item.getComponent());
                 item.setComponent(BizConstant.IFRAME);
-                meta.setComponent("sys/iframe/index");
             } else if (ResourceOpenWithEnum.OUTER_CHAIN.eq(item.getOpenWith())) {
                 // 是否外链
                 item.setComponent(BizConstant.IFRAME);
@@ -336,7 +331,6 @@ public class ResourceBiz {
                 if (meta == null) {
                     meta = new RouterMeta();
                 }
-                meta.setComponent(item.getComponent());
                 if (StrUtil.isEmpty(meta.getTitle())) {
                     meta.setTitle(item.getName());
                 }
@@ -345,7 +339,6 @@ public class ResourceBiz {
                     //  是否内嵌页面
                     meta.setFrameSrc(item.getComponent());
                     item.setComponent(BizConstant.IFRAME);
-                    meta.setComponent("_builtin/iframe/index");
                 } else if (ResourceOpenWithEnum.OUTER_CHAIN.eq(item.getOpenWith())) {
                     // 是否外链
                     item.setComponent(BizConstant.IFRAME);

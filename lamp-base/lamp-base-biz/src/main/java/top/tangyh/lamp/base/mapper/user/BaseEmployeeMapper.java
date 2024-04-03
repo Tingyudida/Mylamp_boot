@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import top.tangyh.basic.base.mapper.SuperMapper;
 import top.tangyh.lamp.base.entity.user.BaseEmployee;
+import top.tangyh.lamp.base.vo.query.user.BaseEmployeePageQuery;
 import top.tangyh.lamp.base.vo.result.user.BaseEmployeeResultVO;
 
 import java.util.List;
@@ -27,9 +28,12 @@ public interface BaseEmployeeMapper extends SuperMapper<BaseEmployee> {
      *
      * @param page    分页对象
      * @param wrapper 查询条件
+     * @param model  条件
      * @return 分页用户数据
      */
-    IPage<BaseEmployeeResultVO> selectPageResultVO(IPage<BaseEmployee> page, @Param(Constants.WRAPPER) Wrapper<BaseEmployee> wrapper);
+    IPage<BaseEmployeeResultVO> selectPageResultVO(IPage<BaseEmployee> page,
+                                                   @Param(Constants.WRAPPER) Wrapper<BaseEmployee> wrapper,
+                                                   @Param("model") BaseEmployeePageQuery model);
 
     /**
      * 根据用户id查询员工

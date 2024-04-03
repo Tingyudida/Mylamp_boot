@@ -24,6 +24,17 @@ import java.util.Map;
 public interface FileService extends SuperService<Long, File> {
 
     /**
+     * 根据业务id 和 业务类型 查询附件
+     * <p>
+     * 返回值为： [附件, ...]
+     *
+     * @param bizId   业务id
+     * @param bizType 业务类型
+     * @return 附件
+     */
+    List<FileResultVO> listByBizIdAndBizType(Long bizId, String bizType);
+
+    /**
      * 上传附件
      *
      * @param file         文件
@@ -57,4 +68,15 @@ public interface FileService extends SuperService<Long, File> {
      * @throws Exception
      */
     void download(HttpServletRequest request, HttpServletResponse response, List<Long> ids) throws Exception;
+
+    /**
+     * 下载文件
+     *
+     * @param request  请求头
+     * @param response 响应头
+     * @param id      文件id
+     * @throws Exception
+     */
+    void download(HttpServletRequest request, HttpServletResponse response, Long id) throws Exception;
+
 }

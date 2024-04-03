@@ -98,4 +98,19 @@ public interface BaseOrgService extends SuperCacheService<Long, BaseOrg> {
      * @create [2022/10/26 10:27 PM ] [tangyh] [初始创建]
      */
     BaseOrg getDefaultOrg(List<BaseOrg> orgList, Long lastOrgId);
+
+    /**
+     * 查询当前员工的所有部门或单位
+     *
+     * @param employeeId 员工id
+     * @return
+     */
+    List<BaseOrg> findOrgByEmployeeId(Long employeeId);
+
+    /**
+     * 根据部门id，递归查询部门的上级公司id
+     * @param deptId 部门id
+     * @return
+     */
+    BaseOrg getCompanyByDeptId(Long deptId);
 }

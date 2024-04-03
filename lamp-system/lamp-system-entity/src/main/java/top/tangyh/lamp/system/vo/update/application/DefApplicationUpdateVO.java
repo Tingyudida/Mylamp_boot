@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import top.tangyh.basic.base.entity.SuperEntity;
-import top.tangyh.lamp.model.vo.save.AppendixSaveVO;
 
 import java.io.Serializable;
 
@@ -106,5 +105,5 @@ public class DefApplicationUpdateVO implements Serializable {
      */
     @Schema(description = "图标")
     @Valid
-    private AppendixSaveVO appendixIcon;
+    private Long appendixIcon;
 }

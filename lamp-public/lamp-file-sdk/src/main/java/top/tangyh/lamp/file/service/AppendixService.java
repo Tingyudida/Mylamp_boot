@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import top.tangyh.basic.base.entity.SuperEntity;
 import top.tangyh.basic.base.manager.SuperManager;
@@ -17,6 +16,7 @@ import top.tangyh.lamp.model.vo.result.AppendixResultVO;
 import top.tangyh.lamp.model.vo.save.AppendixSaveVO;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -56,128 +56,103 @@ public interface AppendixService extends SuperManager<Appendix> {
     /**
      * 构建 listByObjectId 方法的key
      *
-     * @param bizId   对象id
-     * @param bizType 功能点
+     * @param bizId   业务id
+     * @param bizType 业务类型
      * @return 业务附件
      */
-    default AppendixBizKey buildBiz(@NonNull Long bizId, @NonNull String bizType) {
+    default AppendixBizKey buildBiz(Long bizId, String bizType) {
         return AppendixBizKey.builder().bizId(bizId).bizType(bizType).build();
     }
 
     /**
-     * 根据对象id 和 任意个功能点 查询附件
+     * 根据业务id 和 任意个业务类型 查询附件
      * <p>
      * 返回值为：
      * bizId + bizType -> [附件, ...]
      *
-     * @param bizId   对象id
-     * @param bizType 功能点
-     * @return
+     * @param bizId   业务id
+     * @param bizType 业务类型
+     * @return 附件
      */
-    Multimap<AppendixBizKey, AppendixResultVO> listByBizId(@NonNull Long bizId, @Nullable String... bizType);
+    Multimap<AppendixBizKey, AppendixResultVO> listByBizId(Long bizId, @Nullable String... bizType);
 
     /**
-     * 根据对象id 和 任意个功能点 查询附件
+     * 根据业务id 和 任意个业务类型 查询附件
      * <p>
      * 返回值为：
      * bizId + bizType -> [附件, ...]
      *
-     * @param bizIds  对象id
-     * @param bizType 功能点
-     * @return
+     * @param bizIds  业务id
+     * @param bizType 业务类型
+     * @return 附件
      */
-    Multimap<AppendixBizKey, AppendixResultVO> listByBizIds(@NonNull List<Long> bizIds, @Nullable String... bizType);
+    Multimap<AppendixBizKey, AppendixResultVO> listByBizIds(List<Long> bizIds, @Nullable String... bizType);
 
     /**
-     * 根据对象id 和 功能点 查询附件
+     * 根据业务id 和 业务类型 查询附件
      * <p>
      * 返回值为： [附件, ...]
      *
-     * @param bizId   对象id
-     * @param bizType 功能点
-     * @return
+     * @param bizId   业务id
+     * @param bizType 业务类型
+     * @return 附件
      */
-    List<AppendixResultVO> listByBizIdAndBizType(@NonNull Long bizId, @NonNull String bizType);
+    List<AppendixResultVO> listByBizIdAndBizType(Long bizId, String bizType);
 
     /**
-     * 根据对象id 和 功能点查询附件， 若查到多个附件，也只返回一个。
+     * 根据业务id 和 业务类型查询附件， 若查到多个附件，也只返回一个。
      * <p>
-     * 请业务方自行确保该功能点的附件始终只有一个。
-     *
-     * @param bizId
-     * @param bizType
-     * @return
-     */
-    AppendixResultVO getByBiz(@NonNull Long bizId, @NonNull String bizType);
-
-    /**
-     * 新增附件信息
-     * <p>
-     * 逻辑：
-     * 1. 若objectId不为空， 根据objectId，删除附件记录
-     * 2. 若附件信息不为为空， 保存最新的附件信息
-     *
-     * @param bizId  业务id
-     * @param saveVO 附件
-     * @return 是否成功
-     */
-    Boolean save(@Nullable Long bizId, @Nullable AppendixSaveVO saveVO);
-
-    /**
-     * 新增附件信息
-     * 就算你的一个表单有多个附件字段，也合并成一个list传给我
-     *
-     * <p>
-     * 逻辑：
-     * 1. 若objectId不为空， 根据objectId，删除附件记录
-     * 2. 若附件信息不为为空， 保存最新的附件信息
+     * 请业务方自行确保该业务类型的附件始终只有一个。
      *
      * @param bizId 业务id
-     * @param list  附件
-     * @return 是否成功
+     * @param bizType 业务类型
+     * @return 附件
      */
-    Boolean save(@Nullable Long bizId, @Nullable List<AppendixSaveVO> list);
+    AppendixResultVO getByBiz(Long bizId, String bizType);
 
     /**
      * 新增附件信息
-     * 就算你的一个表单有多个附件字段，也合并成一个list传给我
-     *
      * <p>
      * 逻辑：
-     * 1. 若objectId不为空， 根据objectId，删除附件记录
-     * 2. 若附件信息不为为空， 保存最新的附件信息
+     * 1. bizId 不能为空，先根据bizId删除附件
+     * 2. 若附件信息不为为空，保存最新的附件信息
      *
-     * @param bizId   业务id
-     * @param bizType 功能点
-     * @param list    附件
+     * @param appendix  业务附件
      * @return 是否成功
      */
-    Boolean save(@Nullable Long bizId, @Nullable String bizType, @Nullable List<AppendixSaveVO> list);
+    Boolean save(AppendixSaveVO appendix);
 
     /**
-     * 根据对象id批量删除附件
+     * 新增附件信息
+     * <p>
+     * 逻辑：
+     * 1. bizId 不能为空，先根据bizId删除附件
+     * 2. 若附件信息不为为空，保存最新的附件信息
      *
-     * @param bizIds 对象id
-     * @return
+     * @param appendixList  业务附件
+     * @return 是否成功
      */
-    boolean removeByBizId(@NonNull List<Long> bizIds);
+    Boolean save(List<AppendixSaveVO> appendixList);
 
     /**
-     * 根据对象id批量删除附件
+     * 根据业务id批量删除附件
      *
-     * @param bizIds 对象id
-     * @return
+     * 适用于一张表只有1个附件时，批量删除业务数据
+     *
+     * @param bizType 业务类型
+     * @param bizIds 业务id
+     * @return 是否删除了记录
      */
-    boolean removeByBizId(@NonNull Long... bizIds);
+    boolean removeByBizId(Collection<Long> bizIds, String bizType);
 
     /**
-     * 根据对象id批量删除附件
+     * 删除多条数据
      *
-     * @param bizId   对象id
-     * @param bizType 对象id
-     * @return
-     */
-    boolean removeByBizId(Long bizId, String bizType);
+     * 使用于一张表有多个附件时，同时删除多条数据的多个业务类型
+     *
+     * @param appendixList 附件
+     * */
+    void removeByBiz(List<AppendixSaveVO> appendixList);
 
     @Data
     @Builder

@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import top.tangyh.basic.constant.Constants;
+import top.tangyh.basic.exception.BizException;
 import top.tangyh.basic.utils.StrPool;
 import top.tangyh.lamp.file.enumeration.FileStorageType;
 
@@ -48,6 +49,8 @@ public class FileServerProperties {
      * 2. 需要url永久访问的场景
      */
     private Set<String> publicBucket = new HashSet<>();
+    /** 支持的文件后缀 */
+    private String suffix;
 
     private Ali ali = new Ali();
     private QiNiu qiNiu = new QiNiu();
@@ -55,6 +58,16 @@ public class FileServerProperties {
     private MinIo minIo = new MinIo();
     private Local local = new Local();
     private FastDfs fastDfs = new FastDfs();
+
+    public boolean validSuffix(String name) {
+        if (StrUtil.isEmpty(suffix)) {
+            throw BizException.wrap("请配置文件名后缀白名单");
+        }
+        if (StrUtil.isEmpty(name)) {
+            throw BizException.wrap("文件名不能为空");
+        }
+        return StrUtil.split(suffix, ",").stream().anyMatch(name::endsWith);
+    }
 
     public enum Region {
         /**

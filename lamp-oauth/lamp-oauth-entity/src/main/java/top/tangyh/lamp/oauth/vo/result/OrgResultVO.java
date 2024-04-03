@@ -29,9 +29,7 @@ import java.util.List;
 public class OrgResultVO {
 
     @Schema(description = "当前租户下，所属单位")
-    private List<BaseOrg> companyList;
-    @Schema(description = "当前租户下和单位下，所属部门")
-    private List<BaseOrg> deptList;
+    private List<BaseOrg> orgList;
     /**
      * 当前单位ID
      */
@@ -42,5 +40,9 @@ public class OrgResultVO {
      */
     @Schema(description = "当前部门ID")
     private Long currentDeptId;
+
+
+    @Schema(description = "当前员工ID")
+    private Long employeeId;
 
 }

@@ -9,8 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import top.tangyh.basic.base.entity.Entity;
-import top.tangyh.lamp.model.enumeration.base.FileType;
+import top.tangyh.basic.base.entity.SuperEntity;
 
 import java.time.LocalDateTime;
 
@@ -34,7 +33,7 @@ import static top.tangyh.lamp.model.constant.Condition.LIKE;
 @Accessors(chain = true)
 @TableName("com_appendix")
 @AllArgsConstructor
-public class Appendix extends Entity<Long> {
+public class Appendix extends SuperEntity<Long> {
 
     private static final long serialVersionUID = 1L;
     /**
@@ -49,60 +48,14 @@ public class Appendix extends Entity<Long> {
     @TableField(value = "biz_type", condition = LIKE)
     private String bizType;
 
-    /**
-     * 文件类型
-     */
-    @TableField(value = "file_type", condition = LIKE)
-    private FileType fileType;
-
-    /**
-     * 桶
-     */
-    @TableField(value = "bucket", condition = LIKE)
-    private String bucket;
-
-    /**
-     * 文件相对地址
-     */
-    @TableField(value = "path", condition = LIKE)
-    private String path;
-
-    /**
-     * 原始文件名
-     */
-    @TableField(value = "original_file_name", condition = LIKE)
-    private String originalFileName;
-
-    /**
-     * 文件类型
-     */
-    @TableField(value = "content_type", condition = LIKE)
-    private String contentType;
-
-    /**
-     * 大小
-     */
-    @TableField(value = "size_")
-    private Long size;
-
 
     @Builder
-    public Appendix(Long id, LocalDateTime createdTime, Long createdBy, LocalDateTime updatedTime, Long updatedBy,
-                    Long bizId, String bizType, FileType fileType, String bucket, String path,
-                    String originalFileName, String contentType, Long size) {
+    public Appendix(Long id, LocalDateTime createdTime, Long createdBy, Long bizId, String bizType) {
         this.id = id;
         this.createdTime = createdTime;
         this.createdBy = createdBy;
-        this.updatedTime = updatedTime;
-        this.updatedBy = updatedBy;
         this.bizId = bizId;
         this.bizType = bizType;
-        this.fileType = fileType;
-        this.bucket = bucket;
-        this.path = path;
-        this.originalFileName = originalFileName;
-        this.contentType = contentType;
-        this.size = size;
     }
 
 }

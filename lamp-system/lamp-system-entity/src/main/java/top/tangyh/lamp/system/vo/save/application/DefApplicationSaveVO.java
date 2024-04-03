@@ -100,6 +100,6 @@ public class DefApplicationSaveVO implements Serializable {
      */
     @Schema(description = "图标")
     @Valid
-    private AppendixSaveVO appendixIcon;
+    private Long appendixIcon;
 
 }

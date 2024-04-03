@@ -10,7 +10,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import top.tangyh.lamp.model.vo.save.AppendixSaveVO;
 
 import java.io.Serializable;
 
@@ -43,6 +42,6 @@ public class DefUserAvatarUpdateVO implements Serializable {
      */
     @Schema(description = "上传的头像")
     @Valid
-    private AppendixSaveVO appendixAvatar;
+    private Long appendixAvatar;
 
 }

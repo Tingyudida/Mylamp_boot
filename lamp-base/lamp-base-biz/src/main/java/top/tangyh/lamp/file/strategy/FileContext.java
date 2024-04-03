@@ -3,6 +3,7 @@ package top.tangyh.lamp.file.strategy;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.URLUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import top.tangyh.lamp.file.properties.FileServerProperties;
 import top.tangyh.lamp.file.utils.ZipUtils;
 import top.tangyh.lamp.file.vo.param.FileUploadVO;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -173,6 +175,26 @@ public class FileContext {
             fileFile.setUrl(url);
         }
         down(request, response, list);
+    }
+
+    public void download(HttpServletRequest request, HttpServletResponse response, File file) throws Exception {
+        FileStrategy fileStrategy = getFileStrategy(file.getStorageType());
+        String url = fileStrategy.getUrl(FileGetUrlBO.builder()
+                .bucket(file.getBucket())
+                .path(file.getPath())
+                .build());
+        file.setUrl(url);
+        if (StrUtil.isNotEmpty(url)) {
+            // 重定向url，让浏览器直接下载该url，将下载压力转交给第三方oss，减轻文件服务的压力
+            if (FileStorageType.LOCAL.eq(file.getStorageType())) {
+                // 本地模式，需要在nginx配置  add_header Content-Disposition "attachment;filename=$arg_attname";
+                response.sendRedirect(url + "?filename=" + URLUtil.encode(file.getOriginalFileName()));
+            } else {
+                response.sendRedirect(url);
+            }
+        } else {
+            down(request, response, Collections.singletonList(file));
+        }
     }
 
     public void down(HttpServletRequest request, HttpServletResponse response, List<File> list) throws Exception {

@@ -48,13 +48,12 @@ public interface TokenGranter {
     /**
      * 切换企业和机构
      *
-     * @param companyId companyId
-     * @param deptId    deptId
+     * @param orgId    机构ID
      * @return top.tangyh.lamp.oauth.vo.result.LoginResultVO
      * @author tangyh
      * @date 2022/9/16 1:14 PM
      * @create [2022/9/16 1:14 PM ] [tangyh] [初始创建]
      */
-    LoginResultVO switchOrg(Long companyId, Long deptId);
+    LoginResultVO switchOrg(Long orgId);
 
 }

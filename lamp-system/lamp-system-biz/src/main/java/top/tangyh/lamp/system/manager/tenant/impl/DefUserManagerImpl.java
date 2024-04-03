@@ -159,7 +159,8 @@ public class DefUserManagerImpl extends SuperCacheManagerImpl<DefUserMapper, Def
     }
 
 
-    private void delUserCache(Collection<?> list) {
+    @Override
+    public void delUserCache(Collection<?> list) {
         if (CollUtil.isEmpty(list)) {
             return;
         }

@@ -18,7 +18,6 @@ import org.apache.ibatis.session.RowBounds;
 @Slf4j
 public class DataScopeInnerInterceptor implements InnerInterceptor {
 
-
     /**
      * 企业版 拥有此插件的全部源码
      */

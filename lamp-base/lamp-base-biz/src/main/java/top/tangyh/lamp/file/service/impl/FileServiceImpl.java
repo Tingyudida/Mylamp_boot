@@ -43,6 +43,11 @@ public class FileServiceImpl extends SuperServiceImpl<FileManager, Long, File> i
     @Resource
     private FileManager fileManager;
 
+    @Override
+    public List<FileResultVO> listByBizIdAndBizType(Long bizId, String bizType) {
+        ArgumentAssert.notNull(bizId, "请传入业务id");
+        return superManager.listByBizIdAndBizType(bizId, bizType);
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -82,5 +87,12 @@ public class FileServiceImpl extends SuperServiceImpl<FileManager, Long, File> i
         ArgumentAssert.notEmpty(list, "请配置正确的文件存储类型");
 
         fileContext.download(request, response, list);
+    }
+
+    @Override
+    public void download(HttpServletRequest request, HttpServletResponse response, Long id) throws Exception {
+        File file = fileManager.getById(id);
+        ArgumentAssert.notNull(file, "请配置正确的文件存储类型");
+        fileContext.download(request, response, file);
     }
 }

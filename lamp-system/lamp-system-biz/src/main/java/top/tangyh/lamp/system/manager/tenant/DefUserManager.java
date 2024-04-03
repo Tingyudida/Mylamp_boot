@@ -7,6 +7,8 @@ import top.tangyh.lamp.system.entity.tenant.DefUser;
 import top.tangyh.lamp.system.vo.query.tenant.DefUserPageQuery;
 import top.tangyh.lamp.system.vo.result.tenant.DefUserResultVO;
 
+import java.util.Collection;
+
 /**
  * <p>
  * 通用业务层
@@ -125,4 +127,10 @@ public interface DefUserManager extends SuperCacheManager<DefUser>, LoadService 
      * @return
      */
     DefUser getUserByMobile(String mobile);
+
+    /**
+     * 清理缓存
+     * @param list id或用户对象
+     */
+    void delUserCache(Collection<?> list);
 }

@@ -1,5 +1,6 @@
 package top.tangyh.lamp.file.controller;
 
+import cn.hutool.core.util.StrUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import top.tangyh.basic.annotation.log.WebLog;
 import top.tangyh.basic.base.R;
 import top.tangyh.basic.utils.ArgumentAssert;
+import top.tangyh.lamp.file.properties.FileServerProperties;
 import top.tangyh.lamp.file.service.FileService;
 import top.tangyh.lamp.file.vo.param.FileUploadVO;
 import top.tangyh.lamp.file.vo.result.FileResultVO;
@@ -45,21 +47,20 @@ import static top.tangyh.lamp.common.constant.SwaggerConstants.DATA_TYPE_MULTIPA
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping({"/file/anyone", "/file/anyTenant"})
-@Tag(name = "租户库-文件实时上传")
+@RequestMapping("/file/anyone")
+@Tag(name = "文件上传")
 public class FileAnyoneController {
     private final FileService fileService;
+    private final FileServerProperties fileServerProperties;
 
 
     /**
-     * 上传小文件到租户库
-     * <p>
-     * 适用于非租户请求的文件上传
+     * 上传文件
      *
      * @param file         文件
      * @param fileUploadVO 附件信息
      */
-    @Operation(summary = "上传文件", description = "上传小文件到租户库, 适用于租户请求的文件上传。 此接口上传的文件会存储到base库，调用此接口请确保请求头中有租户ID")
+    @Operation(summary = "上传文件", description = "上传文件")
     @Parameters({
             @Parameter(name = "file", description = "附件", schema = @Schema(type = DATA_TYPE_MULTIPART_FILE), in = ParameterIn.QUERY, required = true),
     })
@@ -71,6 +72,17 @@ public class FileAnyoneController {
         if (file.isEmpty()) {
             return R.validFail(BASE_VALID_PARAM.build("请上传有效文件"));
         }
+
+        if (!fileServerProperties.validSuffix(file.getOriginalFilename())) {
+            return R.validFail(BASE_VALID_PARAM.build("文件后缀不支持"));
+        }
+        if (StrUtil.containsAny(file.getOriginalFilename(), "../", "./")) {
+            return R.validFail(BASE_VALID_PARAM.build("文件名不能含有特殊字符"));
+        }
+
+//        if (ContextUtil.isEmptyTenantId()) {
+//            return R.validFail(BASE_VALID_PARAM.build("请携带租户信息"));
+//        }
         return R.success(fileService.upload(file, fileUploadVO));
     }
 
@@ -82,20 +94,33 @@ public class FileAnyoneController {
     @Operation(summary = "根据文件id查询文件的临时访问路径", description = "根据文件id查询文件的临时访问路径")
     @PostMapping(value = "/findUrlById")
     @WebLog("根据文件id，获取文件临时的访问路径")
-    public R<Map<Long, String>> findUrlFormTenantById(@RequestBody List<Long> ids) {
+    public R<Map<Long, String>> findUrlById(@RequestBody List<Long> ids) {
         return R.success(fileService.findUrlById(ids));
     }
 
     /**
-     * 在租户库库下载一个文件或多个文件打包下载
+     * 下载一个文件或多个文件打包下载
      *
      * @param ids 文件id
      */
     @Operation(summary = "根据文件id打包下载文件", description = "根据文件id打包下载文件")
     @GetMapping(value = "/download", produces = "application/octet-stream")
-    @WebLog("下载附件")
-    public void downloadFromTenant(@RequestParam List<Long> ids, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    @WebLog("批量下载附件")
+    public void download(@RequestParam List<Long> ids, HttpServletRequest request, HttpServletResponse response) throws Exception {
         ArgumentAssert.notEmpty(ids, "请选择至少一个附件");
         fileService.download(request, response, ids);
+    }
+
+    /**
+     * 根据文件id下载文件
+     *
+     * @param id 文件id
+     */
+    @Operation(summary = "根据文件id下载文件", description = "根据文件id下载文件")
+    @GetMapping(value = "/down", produces = "application/octet-stream")
+    @WebLog("下载附件")
+    public void download(@RequestParam Long id, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        ArgumentAssert.notNull(id, "请选择至少一个附件");
+        fileService.download(request, response, id);
     }
 }

@@ -21,9 +21,11 @@ import top.tangyh.basic.utils.BeanPlusUtil;
 import top.tangyh.basic.utils.CollHelper;
 import top.tangyh.basic.utils.TreeUtil;
 import top.tangyh.lamp.common.cache.tenant.application.ApplicationResourceCacheKeyBuilder;
+import top.tangyh.lamp.common.constant.AppendixType;
 import top.tangyh.lamp.common.constant.DefValConstants;
 import top.tangyh.lamp.file.service.AppendixService;
 import top.tangyh.lamp.model.enumeration.system.ResourceTypeEnum;
+import top.tangyh.lamp.model.vo.save.AppendixSaveVO;
 import top.tangyh.lamp.system.entity.application.DefApplication;
 import top.tangyh.lamp.system.entity.application.DefResource;
 import top.tangyh.lamp.system.entity.application.DefUserApplication;
@@ -99,7 +101,7 @@ public class DefApplicationServiceImpl extends SuperCacheServiceImpl<DefApplicat
         defApplication.setAppSecret(RandomUtil.randomString(36));
         defApplication.setIsVisible(true);
         superManager.save(defApplication);
-        appendixService.save(defApplication.getId(), applicationSaveVO.getAppendixIcon());
+        appendixService.save(AppendixSaveVO.build(defApplication.getId(), AppendixType.System.DEF__APPLICATION__LOGO, applicationSaveVO.getAppendixIcon()));
         return defApplication;
     }
 
@@ -111,7 +113,7 @@ public class DefApplicationServiceImpl extends SuperCacheServiceImpl<DefApplicat
         DefApplication defApplication = BeanPlusUtil.toBean(applicationUpdateVO, DefApplication.class);
         superManager.updateById(defApplication);
 
-        appendixService.save(defApplication.getId(), applicationUpdateVO.getAppendixIcon());
+        appendixService.save(AppendixSaveVO.build(defApplication.getId(), AppendixType.System.DEF__APPLICATION__LOGO, applicationUpdateVO.getAppendixIcon()));
         return defApplication;
     }
 
@@ -209,6 +211,7 @@ public class DefApplicationServiceImpl extends SuperCacheServiceImpl<DefApplicat
     public boolean removeByIds(Collection<Long> idList) {
         boolean flag = super.removeByIds(idList);
         cacheOps.del(idList.stream().map(ApplicationResourceCacheKeyBuilder::build).toArray(CacheKey[]::new));
+        appendixService.removeByBizId(idList, AppendixType.System.DEF__APPLICATION__LOGO);
         return flag;
     }
 }

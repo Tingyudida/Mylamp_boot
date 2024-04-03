@@ -31,12 +31,4 @@ public interface DefApplicationMapper extends SuperMapper<DefApplication> {
      */
     List<DefApplicationResultVO> findMyApplication(@Param("name") String name);
 
-    /**
-     * 查询员工拥有的应用
-     *
-     * @param employeeId 员工id
-     * @param now        当前时间
-     * @return
-     */
-    List<Long> findApplicationByEmployeeId(@Param("employeeId") Long employeeId, @Param("now") LocalDateTime now);
 }

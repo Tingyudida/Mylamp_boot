@@ -71,24 +71,11 @@ public class BaseEmployeeServiceImpl extends SuperCacheServiceImpl<BaseEmployeeM
                 .in(BaseEmployee::getPositionId, model.getPositionId())
                 .eq(BaseEmployee::getActiveStatus, model.getActiveStatus())
                 .eq(BaseEmployee::getState, model.getState())
-                .in(BaseEmployee::getUserId, model.getUserIdList())
-                .inSql(CollUtil.isNotEmpty(model.getOrgIdList()), BaseEmployee::getId,
-                        " select eor.employee_id from base_employee_org_rel eor where eor.employee_id = e.id " +
-                                "  and eor.org_id in ( " + StrUtil.join(",", model.getOrgIdList()) + " )  ")
-        ;
+                .in(BaseEmployee::getUserId, model.getUserIdList());
 
-        if (StrUtil.equalsAny(model.getScope(), BizConstant.SCOPE_BIND, BizConstant.SCOPE_UN_BIND) && model.getRoleId() != null) {
-            String sql = " select err.employee_id from base_employee_role_rel err where err.employee_id = e.id \n" +
-                    "  and err.role_id =   " + model.getRoleId();
-            if (BizConstant.SCOPE_BIND.equals(model.getScope())) {
-                wrap.inSql(BaseEmployee::getId, sql);
-            } else {
-                wrap.notInSql(BaseEmployee::getId, sql);
-            }
-        }
-
-        return superManager.selectPageResultVO(page, wrap);
+        return superManager.selectPageResultVO(page, wrap, model);
     }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)

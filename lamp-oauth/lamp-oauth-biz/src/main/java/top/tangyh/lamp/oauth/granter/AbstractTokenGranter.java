@@ -50,6 +50,7 @@ import top.tangyh.lamp.common.cache.common.TokenUserIdCacheKeyBuilder;
 import top.tangyh.lamp.common.properties.SystemProperties;
 import top.tangyh.lamp.file.service.AppendixService;
 import top.tangyh.lamp.model.enumeration.StateEnum;
+import top.tangyh.lamp.model.enumeration.base.OrgTypeEnum;
 import top.tangyh.lamp.model.enumeration.base.UserStatusEnum;
 import top.tangyh.lamp.oauth.event.LoginEvent;
 import top.tangyh.lamp.oauth.event.model.LoginStatusDTO;
@@ -61,7 +62,6 @@ import top.tangyh.lamp.system.enumeration.system.LoginStatusEnum;
 import top.tangyh.lamp.system.service.system.DefClientService;
 import top.tangyh.lamp.system.service.tenant.DefUserService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static top.tangyh.basic.context.ContextConstants.CLIENT_KEY;
@@ -273,34 +273,57 @@ public abstract class AbstractTokenGranter implements TokenGranter {
     protected Org findOrg(Employee employee) {
         Long employeeId = employee.getEmployeeId();
 
-        // 查询单位、部门信息
-        // 所属单位
-        Long currentCompanyId = null;
-        Long currentTopCompanyId = null;
+        // 当前所属部门
         Long currentDeptId = null;
+        // 当前所属单位
+        Long currentCompanyId = null;
+        // 当前所属顶级单位
+        Long currentTopCompanyId = null;
         if (employeeId != null) {
             BaseEmployee baseEmployee = baseEmployeeService.getByIdCache(employeeId);
+
+            // 当前用户尚不属于任意租户
             if (baseEmployee == null) {
                 return Org.builder()
                         .currentTopCompanyId(null)
                         .currentCompanyId(null)
                         .currentDeptId(null).build();
             }
-            BaseOrg defaultCompany;
+
             boolean flag = false;
+            // 上次登录的部门
+            if (baseEmployee.getLastDeptId() != null) {
+                currentDeptId = baseEmployee.getLastDeptId();
+                // TODO 若用户变更了部门，是否有问题
+            } else {
+                // 上次登录部门为空，则随机选择一个部门
+                List<BaseOrg> deptList = baseOrgService.findDeptByEmployeeId(employeeId, null);
+                BaseOrg defaultDept = baseOrgService.getDefaultOrg(deptList, null);
+
+                currentDeptId = defaultDept != null ? defaultDept.getId() : null;
+                baseEmployee.setLastDeptId(currentDeptId);
+
+                flag = currentDeptId != null;
+            }
+
+            BaseOrg defaultCompany;
             if (baseEmployee.getLastCompanyId() != null) {
                 currentCompanyId = baseEmployee.getLastCompanyId();
 
                 defaultCompany = baseOrgService.getByIdCache(currentCompanyId);
             } else {
-                // 上次登录的单位
-                List<BaseOrg> companyList = baseOrgService.findCompanyByEmployeeId(employeeId);
-                defaultCompany = baseOrgService.getDefaultOrg(companyList, baseEmployee.getLastCompanyId());
+                if (currentDeptId != null) {
+                    defaultCompany = baseOrgService.getCompanyByDeptId(currentDeptId);
+                } else {
+                    // currentDeptId 为空，员工可能直接挂在单位下、也可能挂不属于任何部门
+                    List<BaseOrg> companyList = baseOrgService.findCompanyByEmployeeId(employeeId);
+                    defaultCompany = baseOrgService.getDefaultOrg(companyList, baseEmployee.getLastCompanyId());
+                }
 
                 currentCompanyId = defaultCompany != null ? defaultCompany.getId() : null;
-
                 baseEmployee.setLastCompanyId(currentCompanyId);
-                flag = currentCompanyId != null;
+                flag = flag || currentCompanyId != null;
+
             }
 
             if (defaultCompany != null) {
@@ -312,19 +335,6 @@ public abstract class AbstractTokenGranter implements TokenGranter {
                     rootCompany = defaultCompany;
                 }
                 currentTopCompanyId = rootCompany != null ? rootCompany.getId() : null;
-            }
-
-            // 上次登录的部门
-            if (baseEmployee.getLastDeptId() != null) {
-                currentDeptId = baseEmployee.getLastDeptId();
-            } else {
-                List<BaseOrg> deptList = baseOrgService.findDeptByEmployeeId(employeeId, currentCompanyId);
-                BaseOrg defaultDept = baseOrgService.getDefaultOrg(deptList, baseEmployee.getLastDeptId());
-
-                currentDeptId = defaultDept != null ? defaultDept.getId() : null;
-                baseEmployee.setLastDeptId(currentDeptId);
-
-                flag = flag || currentDeptId != null;
             }
 
             if (flag) {
@@ -378,7 +388,7 @@ public abstract class AbstractTokenGranter implements TokenGranter {
     }
 
     @Override
-    public LoginResultVO switchOrg(Long companyId, Long deptId) {
+    public LoginResultVO switchOrg(Long orgId) {
         Token token = tokenUtil.parseTokenSneaky(ContextUtil.getToken());
         if (token == null) {
             throw UnauthorizedException.wrap(ExceptionCode.JWT_TOKEN_EXPIRED);
@@ -398,38 +408,65 @@ public abstract class AbstractTokenGranter implements TokenGranter {
             throw UnauthorizedException.wrap(ExceptionCode.JWT_USER_DISABLE);
         }
 
-        BaseEmployee baseEmployee = baseEmployeeService.getEmployeeByUser(userId);
-        ArgumentAssert.notNull(baseEmployee, "您不属于该公司，无法切换");
-        baseEmployee.setLastCompanyId(companyId);
-        baseEmployee.setLastDeptId(deptId);
-        baseEmployeeService.updateAllById(baseEmployee);
-
-        BaseOrg rootCompany = null;
-        if (companyId != null) {
-            BaseOrg company = baseOrgService.getByIdCache(companyId);
-            if (company != null) {
-                Long rootId = TreeUtil.getTopNodeId(company.getTreePath());
-                if (rootId != null) {
-                    rootCompany = baseOrgService.getByIdCache(rootId);
-                } else {
-                    rootCompany = company;
-                }
-            }
+        BaseEmployee employee = baseEmployeeService.getEmployeeByUser(userId);
+        ArgumentAssert.notNull(employee, "您不属于该公司，无法切换");
+        if (!Convert.toBool(employee.getState(), true)) {
+            throw BizException.wrap(ExceptionCode.JWT_EMPLOYEE_DISABLE);
         }
 
+        Long topCompanyId = null;
+        Long companyId = null;
+        Long deptId = null;
+        if (orgId != null) {
+            BaseOrg selectOrg = baseOrgService.getByIdCache(orgId);
+            ArgumentAssert.notNull(selectOrg, "该部门不存在");
+
+            if (OrgTypeEnum.COMPANY.eq(selectOrg.getType())) {
+                companyId = selectOrg.getId();
+
+                Long rootId = TreeUtil.getTopNodeId(selectOrg.getTreePath());
+                if (rootId != null) {
+                    BaseOrg rootCompany = baseOrgService.getByIdCache(rootId);
+                    topCompanyId = rootCompany != null ? rootCompany.getId() : companyId;
+                } else {
+                    topCompanyId = companyId;
+                }
+            } else {
+                deptId = selectOrg.getId();
+
+                BaseOrg company = baseOrgService.getCompanyByDeptId(deptId);
+                if (company != null) {
+                    companyId = company.getId();
+
+                    Long rootId = TreeUtil.getTopNodeId(company.getTreePath());
+                    if (rootId != null) {
+                        BaseOrg rootCompany = baseOrgService.getByIdCache(rootId);
+                        topCompanyId = rootCompany != null ? rootCompany.getId() : companyId;
+                    } else {
+                        topCompanyId = companyId;
+                    }
+                }
+            }
+
+            employee.setLastCompanyId(companyId);
+            employee.setLastDeptId(deptId);
+            baseEmployeeService.updateAllById(employee);
+        }
+
+
         Employee e = Employee.builder()
-                .employeeId(baseEmployee.getId())
+                .employeeId(employee.getId())
                 .build();
 
         Org org = Org.builder()
-                .currentTopCompanyId(rootCompany != null ? rootCompany.getId() : null)
+                .currentTopCompanyId(topCompanyId)
                 .currentCompanyId(companyId)
                 .currentDeptId(deptId)
                 .build();
 
         LoginResultVO loginResultVO = buildResult(e, org, defUser);
 
-        LoginStatusDTO loginStatus = LoginStatusDTO.switchOrg(defUser.getId(), baseEmployee.getId());
+        LoginStatusDTO loginStatus = LoginStatusDTO.switchOrg(defUser.getId(), employee.getId());
         SpringUtils.publishEvent(new LoginEvent(loginStatus));
         return loginResultVO;
     }
